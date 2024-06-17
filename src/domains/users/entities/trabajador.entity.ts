@@ -1,15 +1,14 @@
 import {
-  Entity,
   Column,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  OneToOne,
+  Entity,
   JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Sexo } from './sexo.entity';
-import { DatosLaborales } from './datos-laborales.entity';
-import { ContactoEmergencia } from './contacto-emergencia.entity';
 import { CargaFamiliar } from './carga-familiar.entity';
+import { ContactoEmergencia } from './contacto-emergencia.entity';
+import { DatosLaborales } from './datos-laborales.entity';
+import { Sexo } from './sexo.entity';
 
 @Entity()
 export class Trabajador {
