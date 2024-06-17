@@ -1,4 +1,6 @@
-import { IsString, IsInt } from 'class-validator';
+import { IsString, IsInt, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { CreateTrabajadorDto } from './create-trabajador.dto';
 
 export class CreateUsuarioDto {
   @IsString()
@@ -10,6 +12,7 @@ export class CreateUsuarioDto {
   @IsInt()
   id_perfil: number;
 
-  @IsInt()
-  id_trabajador: number;
+  @ValidateNested()
+  @Type(() => CreateTrabajadorDto)
+  trabajador: CreateTrabajadorDto;
 }

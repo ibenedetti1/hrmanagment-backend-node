@@ -1,7 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Perfil, Trabajador, Usuario } from './entities';
+import {
+  CargaFamiliar,
+  ContactoEmergencia,
+  DatosLaborales,
+  Perfil,
+  Sexo,
+  Trabajador,
+  Usuario,
+} from './entities';
 import { CreateUsuarioDto } from './dto/create-usuario.dto';
 
 @Injectable()
@@ -13,32 +21,95 @@ export class UsersService {
     private readonly trabajadorRepository: Repository<Trabajador>,
     @InjectRepository(Perfil)
     private readonly perfilRepository: Repository<Perfil>,
+    @InjectRepository(Sexo)
+    private readonly sexoRepository: Repository<Sexo>,
+    @InjectRepository(DatosLaborales)
+    private readonly datosLaboralesRepository: Repository<DatosLaborales>,
+    @InjectRepository(ContactoEmergencia)
+    private readonly contactoEmergenciaRepository: Repository<ContactoEmergencia>,
+    @InjectRepository(CargaFamiliar)
+    private readonly cargaFamiliarRepository: Repository<CargaFamiliar>,
   ) {}
 
   async findAll(): Promise<Usuario[]> {
     return this.usuarioRepository.find({ relations: ['trabajador', 'perfil'] });
   }
 
-  async findOne(id: number): Promise<Usuario> {
-    return this.usuarioRepository.findOne({
-      where: { user_id: id },
-      relations: ['trabajador', 'perfil'],
+  async findUserByRut(rut: number): Promise<Usuario> {
+    const trabajador = await this.trabajadorRepository.findOne({
+      where: { rut },
+      relations: [
+        'sexo',
+        'datosLaborales',
+        'datosLaborales.cargo',
+        'datosLaborales.area',
+        'contactoEmergencia',
+        'contactoEmergencia.relacion',
+        'cargaFamiliar',
+        'cargaFamiliar.sexo',
+        'cargaFamiliar.relacion',
+      ],
     });
+
+    if (!trabajador) {
+      throw new NotFoundException(`Trabajador con RUT ${rut} no encontrado`);
+    }
+
+    const usuario = await this.usuarioRepository.findOne({
+      where: { trabajador },
+      relations: ['perfil', 'trabajador'],
+    });
+
+    if (!usuario) {
+      throw new NotFoundException(
+        `Usuario con trabajador de RUT ${rut} no encontrado`,
+      );
+    }
+
+    return usuario;
   }
 
   async create(createUsuarioDto: CreateUsuarioDto): Promise<Usuario> {
-    const trabajador = await this.trabajadorRepository.findOne({
-      where: { id_trabajador: createUsuarioDto.id_trabajador },
-    });
     const perfil = await this.perfilRepository.findOne({
       where: { id_perfil: createUsuarioDto.id_perfil },
     });
 
+    const sexoTrabajador = await this.sexoRepository.findOne({
+      where: { id_sexo: createUsuarioDto.trabajador.id_sexo },
+    });
+
+    const datosLaborales = this.datosLaboralesRepository.create({
+      ...createUsuarioDto.trabajador.datosLaborales,
+    });
+    const savedDatosLaborales =
+      await this.datosLaboralesRepository.save(datosLaborales);
+
+    const contactoEmergencia = this.contactoEmergenciaRepository.create({
+      ...createUsuarioDto.trabajador.contactoEmergencia,
+    });
+    const savedContactoEmergencia =
+      await this.contactoEmergenciaRepository.save(contactoEmergencia);
+
+    const cargaFamiliar = this.cargaFamiliarRepository.create({
+      ...createUsuarioDto.trabajador.cargaFamiliar,
+    });
+    const savedCargaFamiliar =
+      await this.cargaFamiliarRepository.save(cargaFamiliar);
+
+    const trabajador = this.trabajadorRepository.create({
+      ...createUsuarioDto.trabajador,
+      sexo: sexoTrabajador,
+      datosLaborales: savedDatosLaborales,
+      contactoEmergencia: savedContactoEmergencia,
+      cargaFamiliar: savedCargaFamiliar,
+    });
+    const savedTrabajador = await this.trabajadorRepository.save(trabajador);
+
     const usuario = this.usuarioRepository.create({
       username: createUsuarioDto.username,
       password: createUsuarioDto.password,
-      trabajador,
       perfil,
+      trabajador: savedTrabajador,
     });
 
     return this.usuarioRepository.save(usuario);
