@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -57,7 +61,19 @@ export class UsersService {
 
     const usuario = await this.usuarioRepository.findOne({
       where: { trabajador },
-      relations: ['perfil', 'trabajador'],
+      relations: [
+        'perfil',
+        'trabajador',
+        'trabajador.sexo',
+        'trabajador.datosLaborales',
+        'trabajador.datosLaborales.cargo',
+        'trabajador.datosLaborales.area',
+        'trabajador.contactoEmergencia',
+        'trabajador.contactoEmergencia.relacion',
+        'trabajador.cargaFamiliar',
+        'trabajador.cargaFamiliar.sexo',
+        'trabajador.cargaFamiliar.relacion',
+      ],
     });
 
     if (!usuario) {
@@ -74,9 +90,16 @@ export class UsersService {
       where: { id_perfil: createUsuarioDto.id_perfil },
     });
 
+    if (!perfil) {
+      throw new BadRequestException('Perfil no encontrado');
+    }
+
     const sexoTrabajador = await this.sexoRepository.findOne({
       where: { id_sexo: createUsuarioDto.trabajador.id_sexo },
     });
+    if (!sexoTrabajador) {
+      throw new BadRequestException('Sexo no encontrado');
+    }
 
     const datosLaborales = this.datosLaboralesRepository.create({
       ...createUsuarioDto.trabajador.datosLaborales,
