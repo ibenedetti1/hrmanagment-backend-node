@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
+
 import {
   Area,
   CargaFamiliar,
@@ -13,7 +12,10 @@ import {
   Sexo,
   Trabajador,
   Usuario,
-} from '../shared/entities';
+} from 'src/domains/shared';
+import { CreateUserService } from './create-user.service';
+import { CreateUserController } from './create-user.controller';
+
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -29,7 +31,7 @@ import {
       Relacion,
     ]),
   ],
-  providers: [UsersService],
-  controllers: [UsersController],
+  providers: [CreateUserService],
+  controllers: [CreateUserController],
 })
-export class UsersModule {}
+export class CreateUserModule {}
