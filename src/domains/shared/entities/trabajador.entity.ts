@@ -1,16 +1,17 @@
 import {
-  Column,
   Entity,
-  JoinColumn,
-  ManyToOne,
   PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
-import { CargaFamiliar } from './carga-familiar.entity';
-import { ContactoEmergencia } from './contacto-emergencia.entity';
-import { DatosLaborales } from './datos-laborales.entity';
 import { Sexo } from './sexo.entity';
+import { DatosLaborales } from './datos-laborales.entity';
+import { ContactoEmergencia } from './contacto-emergencia.entity';
+import { CargaFamiliar } from './carga-familiar.entity';
 
-@Entity()
+@Entity('trabajador')
 export class Trabajador {
   @PrimaryGeneratedColumn()
   id_trabajador: number;
@@ -30,25 +31,25 @@ export class Trabajador {
   @Column()
   dv: string;
 
-  @ManyToOne(() => Sexo)
-  @JoinColumn({ name: 'id_sexo' })
-  sexo: Sexo;
-
   @Column()
   direccion: string;
 
   @Column()
   telefono: number;
 
-  @ManyToOne(() => DatosLaborales)
+  @ManyToOne(() => Sexo)
+  @JoinColumn({ name: 'id_sexo' })
+  sexo: Sexo;
+
+  @ManyToOne(() => DatosLaborales, { eager: true })
   @JoinColumn({ name: 'id_datos_laborales' })
   datosLaborales: DatosLaborales;
 
-  @ManyToOne(() => ContactoEmergencia)
+  @ManyToOne(() => ContactoEmergencia, { eager: true })
   @JoinColumn({ name: 'id_contacto_emergencia' })
   contactoEmergencia: ContactoEmergencia;
 
-  @ManyToOne(() => CargaFamiliar)
+  @ManyToOne(() => CargaFamiliar, { eager: true })
   @JoinColumn({ name: 'id_carga_familiar' })
   cargaFamiliar: CargaFamiliar;
 }

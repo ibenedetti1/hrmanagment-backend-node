@@ -1,13 +1,13 @@
 import {
   Entity,
-  Column,
   PrimaryGeneratedColumn,
+  Column,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
 import { Relacion } from './relacion.entity';
 
-@Entity()
+@Entity('contacto_emergencia')
 export class ContactoEmergencia {
   @PrimaryGeneratedColumn()
   id_contacto_emergencia: number;
@@ -15,10 +15,10 @@ export class ContactoEmergencia {
   @Column()
   nombre_completo: string;
 
+  @Column()
+  telefono: number;
+
   @ManyToOne(() => Relacion)
   @JoinColumn({ name: 'id_relacion' })
   relacion: Relacion;
-
-  @Column()
-  telefono: number;
 }

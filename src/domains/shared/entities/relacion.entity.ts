@@ -1,6 +1,8 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { ContactoEmergencia } from './contacto-emergencia.entity';
+import { CargaFamiliar } from './carga-familiar.entity';
 
-@Entity()
+@Entity('relacion')
 export class Relacion {
   @PrimaryGeneratedColumn()
   id_relacion: number;

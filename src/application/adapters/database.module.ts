@@ -15,7 +15,6 @@ import { EnvironmentService } from '../environment/environment.service';
         password: environmentService.get('SQL_PASSWORD'),
         database: environmentService.get('SQL_DATABASE'),
         autoLoadEntities: true,
-        synchronize: true,
       }),
       inject: [EnvironmentService],
     }),

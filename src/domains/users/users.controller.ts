@@ -1,42 +1,51 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Param,
-  Put,
+  Controller,
   Delete,
-  HttpCode,
-  HttpStatus,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { Usuario } from '../shared/entities';
-import { CreateUsuarioDto } from './dto/create-usuario.dto';
 
-@Controller('users')
+import { CreateUsuarioDto, FilterUsuarioDto, UpdateUsuarioDto } from '../shared';
+import { UsersService } from './users.service';
+
+@Controller('usuarios')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  // @Get()
-  // findAll(): Promise<Usuario[]> {
-  //   return this.usersService.findAll();
-  // }
-
-  @Get('rut/:rut')
-  findUserByRut(@Param('rut') rut: number): Promise<Usuario> {
-    return this.usersService.findUserByRut(rut);
+  @Post()
+  create(@Body() createUsuarioDto: CreateUsuarioDto) {
+    return this.usersService.create(createUsuarioDto);
   }
 
-  @Put(':id')
+  @Get()
+  findAll(@Query() filter: FilterUsuarioDto) {
+    return this.usersService.findAll(filter);
+  }
+
+  @Get(':rut')
+  findOne(@Param('rut') rut: number) {
+    return this.usersService.findOne(rut);
+  }
+
+  @Put(':rut')
   update(
-    @Param('id') id: number,
-    @Body() updateUsuarioDto: Partial<CreateUsuarioDto>,
-  ): Promise<Usuario> {
-    return this.usersService.update(id, updateUsuarioDto);
+    @Param('rut') rut: number,
+    @Body() updateUsuarioDto: UpdateUsuarioDto,
+  ) {
+    return this.usersService.update(rut, updateUsuarioDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: number): Promise<void> {
-    return this.usersService.remove(id);
+  @Delete(':rut')
+  remove(@Param('rut') rut: number) {
+    return this.usersService.remove(rut);
+  }
+
+  @Delete()
+  removeAll() {
+    return this.usersService.removeAll();
   }
 }

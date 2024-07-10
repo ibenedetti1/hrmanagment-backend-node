@@ -1,14 +1,14 @@
 import {
   Entity,
-  Column,
   PrimaryGeneratedColumn,
+  Column,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
 import { Sexo } from './sexo.entity';
 import { Relacion } from './relacion.entity';
 
-@Entity()
+@Entity('carga_familiar')
 export class CargaFamiliar {
   @PrimaryGeneratedColumn()
   id_carga_familiar: number;
