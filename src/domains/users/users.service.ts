@@ -1,8 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Usuario, Trabajador, DatosLaborales, ContactoEmergencia, CargaFamiliar, Sexo, Relacion, Cargo, Area, Perfil, CreateUsuarioDto, FilterUsuarioDto, UpdateUsuarioDto } from '../shared';
-
+import * as bcrypt from 'bcrypt';
+import {
+  Usuario,
+  Trabajador,
+  DatosLaborales,
+  ContactoEmergencia,
+  CargaFamiliar,
+  Sexo,
+  Relacion,
+  Cargo,
+  Area,
+  Perfil,
+  CreateUsuarioDto,
+  FilterUsuarioDto,
+  UpdateUsuarioDto,
+} from '../shared';
 
 @Injectable()
 export class UsersService {
@@ -30,6 +44,9 @@ export class UsersService {
   ) {}
 
   async create(createUsuarioDto: CreateUsuarioDto): Promise<Usuario> {
+    const { password, ...rest } = createUsuarioDto;
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const trabajador = this.trabajadorRepository.create({
       ...createUsuarioDto.trabajador,
       sexo: await this.sexoRepository.findOne({
@@ -79,7 +96,8 @@ export class UsersService {
     const savedTrabajador = await this.trabajadorRepository.save(trabajador);
 
     const usuario = this.usuarioRepository.create({
-      ...createUsuarioDto,
+      ...rest,
+      password: hashedPassword,
       trabajador: savedTrabajador,
       perfil: await this.perfilRepository.findOne({
         where: { id_perfil: createUsuarioDto.id_perfil },
@@ -245,7 +263,9 @@ export class UsersService {
     }
 
     usuario.username = updateUsuarioDto.username;
-    usuario.password = updateUsuarioDto.password;
+    if (updateUsuarioDto.password) {
+      usuario.password = await bcrypt.hash(updateUsuarioDto.password, 10);
+    }
 
     await this.usuarioRepository.save(usuario);
     return this.findOne(rut);
