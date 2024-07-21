@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -44,6 +44,16 @@ export class UsersService {
   ) {}
 
   async create(createUsuarioDto: CreateUsuarioDto): Promise<Usuario> {
+    const existingUser = await this.usuarioRepository
+      .createQueryBuilder('usuario')
+      .leftJoinAndSelect('usuario.trabajador', 'trabajador')
+      .where('trabajador.rut = :rut', { rut: createUsuarioDto.trabajador.rut })
+      .getOne();
+
+    if (existingUser) {
+      throw new BadRequestException('Usuario ya existe');
+    }
+
     const { password, ...rest } = createUsuarioDto;
     const hashedPassword = await bcrypt.hash(password, 10);
 
